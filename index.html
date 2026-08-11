@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainByte - Advanced CS & IT Intelligence Hub</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 3px;
+        }
+
+        /* Smooth transitions for interactive elements */
+        button, input, a {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Hover lift effect with soft glow */
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Smooth fade-in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        /* Audio Waveform Animation */
+        @keyframes waveAnimation {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+        .wave-bar {
+            width: 3px;
+            background-color: #3b82f6;
+            border-radius: 2px;
+            animation: waveAnimation 0.8s infinite ease-in-out;
+        }
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="bg-black text-slate-100 h-screen flex overflow-hidden font-sans">
+
+    <!-- Sidebar for Recent Chats & History -->
+    <aside class="w-72 bg-black border-r border-zinc-900 flex flex-col justify-between hidden md:flex">
+        <div>
+            <!-- Sidebar Header / Logo (Clickable to go Home) -->
+            <div onclick="switchView('home')" class="p-4 border-b border-zinc-900 flex items-center space-x-3 cursor-pointer hover:bg-zinc-900/50 transition">
+                <div class="w-9 h-9 rounded-full bg-blue-950/80 border border-blue-500/70 flex items-center justify-center text-blue-400 shadow-lg shadow-blue-950 hover-lift">
+                    <!-- Exact matching node network logo from your screenshot -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="5" r="2.2" fill="currentColor" />
+                        <circle cx="5" cy="18" r="2.2" fill="currentColor" />
+                        <circle cx="19" cy="18" r="2.2" fill="currentColor" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 6.5L6.2 16.2M13 6.5L17.8 16.2M7.2 18H16.8" />
+                    </svg>
+                </div>
+                <span class="font-bold text-lg text-slate-100 tracking-wide">BrainByte</span>
+            </div>
+
+            <!-- New Chat Button -->
+            <div class="p-4 space-y-2">
+                <button onclick="switchView('chat'); startNewChat();" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-slate-200 font-medium py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-sm hover-lift">
+                    <span>✨ + New Chat</span>
+                </button>
+                
+                <!-- Rename AI Option -->
+                <div class="flex items-center space-x-2 pt-2">
+                    <input 
+                        type="text" 
+                        id="ai-name-input" 
+                        placeholder="Rename AI..." 
+                        value="AI"
+                        class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition"
+                    >
+                    <button 
+                        onclick="updateAIName()" 
+                        class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-sm hover-lift"
+                    >
+                        Save
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat History List -->
+            <div class="px-4 py-2">
+                <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">📜 Recent Chats</p>
+                <div id="chat-history" class="space-y-1 text-sm text-slate-300 overflow-y-auto max-h-[calc(100vh-280px)]">
+                    <!-- Dynamically populated past chats -->
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-zinc-900 text-xs text-zinc-500 text-center">
+            SPPU CS & IT Assistant 💡
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full bg-black">
+        
+        <!-- Header with Home, History & Chatbox Navigation on the Right -->
+        <header class="h-16 border-b border-zinc-900 flex items-center px-8 bg-black/50 backdrop-blur justify-between">
+            <div onclick="switchView('home')" class="flex items-center space-x-3 md:hidden cursor-pointer">
+                <div class="w-8 h-8 rounded-full bg-blue-950/80 border border-blue-500/70 flex items-center justify-center text-blue-400 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="5" r="2.2" fill="currentColor" />
+                        <circle cx="5" cy="18" r="2.2" fill="currentColor" />
+                        <circle cx="19" cy="18" r="2.2" fill="currentColor" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 6.5L6.2 16.2M13 6.5L17.8 16.2M7.2 18H16.8" />
+                    </svg>
+                </div>
+                <span class="font-bold text-slate-100">BrainByte</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-3">
+                <div class="w-7 h-7 rounded-full bg-blue-950/80 border border-blue-500/70 flex items-center justify-center text-blue-400 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="5" r="2.2" fill="currentColor" />
+                        <circle cx="5" cy="18" r="2.2" fill="currentColor" />
+                        <circle cx="19" cy="18" r="2.2" fill="currentColor" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 6.5L6.2 16.2M13 6.5L17.8 16.2M7.2 18H16.8" />
+                    </svg>
+                </div>
+                <span class="text-sm text-zinc-300 font-medium">BrainByte Hub</span>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex items-center space-x-2 bg-zinc-950 border border-zinc-900 p-1 rounded-xl">
+                <button onclick="switchView('home')" id="nav-home" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm hover-lift">Home</button>
+                <button onclick="switchView('history')" id="nav-history" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-zinc-400 hover:text-slate-200 transition hover-lift">History</button>
+                <button onclick="switchView('chat')" id="nav-chat" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-zinc-400 hover:text-slate-200 transition hover-lift">Chatbox</button>
+            </div>
+        </header>
+
+        <!-- HOME VIEW CONTAINER -->
+        <div id="view-home" class="flex-1 overflow-y-auto p-12 flex items-center justify-center bg-black">
+            <div class="max-w-3xl mx-auto text-center space-y-6 fade-in">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium hover-lift">
+                    <span>✨ Next-Gen CS & IT Intelligence Hub</span>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+                    Master Code & Concepts with <span class="text-blue-500">BrainByte</span>
+                </h1>
+                
+                <p class="text-zinc-400 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+                    Your elite AI mentor engineered to conquer complex algorithms, database architectures, operating systems, and backend development. 💻✨
+                </p>
+
+                <div class="pt-4">
+                    <button onclick="switchView('chat'); startNewChat();" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30 hover-lift">
+                        Launch Workspace
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY VIEW CONTAINER -->
+        <div id="view-history" class="flex-1 overflow-y-auto p-8 hidden bg-black">
+            <div class="max-w-4xl mx-auto space-y-6 fade-in">
+                <h2 class="text-2xl font-bold text-white">Session History</h2>
+                <div id="full-history-container" class="space-y-4">
+                    <!-- Dynamically populated session history cards -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CHATBOX VIEW CONTAINER -->
+        <div id="view-chat" class="flex-1 flex flex-col h-[calc(100vh-4rem)] hidden bg-black">
+            <!-- Message Feed -->
+            <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6 bg-black">
+                <!-- Default Welcome Message -->
+                <div class="flex items-start space-x-3 fade-in">
+                    <div class="ai-avatar-name px-2 py-1 rounded-md bg-blue-600 flex items-center justify-center font-bold text-white text-xs shrink-0">AI</div>
+                    <div class="bg-zinc-950 border border-zinc-900 rounded-2xl p-4 max-w-2xl text-slate-200 shadow-sm leading-relaxed">
+                        Hello! 👋 I'm your CS & IT professor and tutor! 🎓✨ Ask me any technical questions, coding problems, or syllabus topics! 💻
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="p-4 bg-black border-t border-zinc-900">
+                <form id="chat-form" class="max-w-4xl mx-auto flex items-center space-x-3">
+                    <!-- Hidden File Input for Photos and Documents -->
+                    <input type="file" id="file-upload" class="hidden" accept="image/*,.pdf,.txt,.docx,.py,.java,.cpp,.js">
+                    
+                    <!-- Professional File Upload SVG Button -->
+                    <button 
+                        type="button" 
+                        onclick="document.getElementById('file-upload').click()" 
+                        class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white p-3 rounded-xl transition flex items-center justify-center shadow-sm hover-lift"
+                        title="Upload photo or file"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                    </button>
+
+                    <!-- Professional Microphone SVG Button -->
+                    <button 
+                        type="button" 
+                        id="mic-btn" 
+                        onclick="toggleVoiceInput()" 
+                        class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white p-3 rounded-xl transition flex items-center justify-center shadow-sm hover-lift"
+                        title="Voice Input (Speech to Text)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="💬 Ask about algorithms, DBMS, networks, or code..." 
+                        required
+                        autocomplete="off"
+                        class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-slate-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition"
+                    >
+                    <button 
+                        type="submit" 
+                        class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-3 rounded-xl transition flex items-center justify-center shadow-lg shadow-blue-950/50 hover-lift"
+                    >
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatContainer = document.getElementById('chat-container');
+        const chatHistoryContainer = document.getElementById('chat-history');
+        const fullHistoryContainer = document.getElementById('full-history-container');
+        
+        const viewHome = document.getElementById('view-home');
+        const viewHistory = document.getElementById('view-history');
+        const viewChat = document.getElementById('view-chat');
+        
+        const navHome = document.getElementById('nav-home');
+        const navHistory = document.getElementById('nav-history');
+        const navChat = document.getElementById('nav-chat');
+        
+        const aiNameInput = document.getElementById('ai-name-input');
+        const fileUpload = document.getElementById('file-upload');
+        const micBtn = document.getElementById('mic-btn');
+
+        let attachedFile = null;
+
+        // Handle File Selection
+        fileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                attachedFile = file;
+                userInput.placeholder = `📎 Attached: ${file.name}`;
+            }
+        });
+
+        // Speech Recognition (Microphone) Integration
+        let recognition = null;
+        let isRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+                micBtn.classList.remove('bg-zinc-900', 'text-zinc-400');
+                userInput.placeholder = "Listening... Speak now 🎤";
+            };
+
+            recognition.onresult = (event) => {
+                const speechText = event.results[0][0].transcript;
+                userInput.value = speechText;
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                stopListeningState();
+            };
+
+            recognition.onend = () => {
+                stopListeningState();
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in this browser. Try Chrome or Edge.');
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function stopListeningState() {
+            isRecording = false;
+            micBtn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+            micBtn.classList.add('bg-zinc-900', 'text-zinc-400');
+            userInput.placeholder = "💬 Ask about algorithms, DBMS, networks, or code...";
+        }
+
+        // Load custom AI name from localStorage if available
+        let customAIName = localStorage.getItem('brainbyte_ai_name') || 'AI';
+        aiNameInput.value = customAIName;
+
+        function updateAIName() {
+            const newName = aiNameInput.value.trim();
+            if (!newName) return;
+            customAIName = newName;
+            localStorage.setItem('brainbyte_ai_name', customAIName);
+            
+            document.querySelectorAll('.ai-avatar-name').forEach(el => {
+                el.textContent = customAIName;
+            });
+            alert(`AI successfully renamed to "${customAIName}"! ✨`);
+        }
+
+        // View Switcher Function with Re-triggering Animation Support
+        function switchView(view) {
+            stopSpeech();
+            
+            // Hide all views
+            viewHome.classList.add('hidden');
+            viewHistory.classList.add('hidden');
+            viewChat.classList.add('hidden');
+            
+            // Reset nav styles
+            navHome.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg text-zinc-400 hover:text-slate-200 transition hover-lift';
+            navHistory.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg text-zinc-400 hover:text-slate-200 transition hover-lift';
+            navChat.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg text-zinc-400 hover:text-slate-200 transition hover-lift';
+
+            if (view === 'home') {
+                viewHome.classList.remove('hidden');
+                navHome.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm hover-lift';
+                triggerAnimation(viewHome);
+            } else if (view === 'history') {
+                viewHistory.classList.remove('hidden');
+                navHistory.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm hover-lift';
+                renderFullHistoryView();
+                triggerAnimation(viewHistory);
+            } else {
+                viewChat.classList.remove('hidden');
+                navChat.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm hover-lift';
+            }
+        }
+
+        function triggerAnimation(container) {
+            const content = container.querySelector('.fade-in');
+            if (content) {
+                content.style.animation = 'none';
+                content.offsetHeight; // reflow
+                content.style.animation = '';
+            }
+        }
+
+        function startNewChat() {
+            stopSpeech();
+            chatContainer.innerHTML = `
+                <div class="flex items-start space-x-3 fade-in">
+                    <div class="ai-avatar-name px-2 py-1 rounded-md bg-blue-600 flex items-center justify-center font-bold text-white text-xs shrink-0">${customAIName}</div>
+                    <div class="bg-zinc-950 border border-zinc-900 rounded-2xl p-4 max-w-2xl text-slate-200 shadow-sm leading-relaxed">
+                        Hello! 👋 I'm your CS & IT professor and tutor! 🎓✨ Ask me any technical questions, coding problems, or syllabus topics! 💻
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load history from localStorage on startup
+        let sessions = JSON.parse(localStorage.getItem('brainbyte_sessions')) || [];
+        renderSidebarHistory();
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let messageText = userInput.value.trim();
+            if (!messageText && !attachedFile) return;
+
+            let displayMessage = messageText;
+            if (attachedFile) {
+                displayMessage = `[Attached File: ${attachedFile.name}]\n${messageText}`;
+            }
+
+            appendMessage(displayMessage, 'user');
+            userInput.value = '';
+            attachedFile = null;
+            fileUpload.value = '';
+            userInput.placeholder = "💬 Ask about algorithms, DBMS, networks, or code...";
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            const loadingId = appendLoadingMessage();
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: displayMessage })
+                });
+
+                const data = await response.json();
+                document.getElementById(loadingId).remove();
+
+                if (data.reply) {
+                    appendMessage(data.reply, 'ai');
+                    saveSession(displayMessage, data.reply);
+                } else {
+                    appendMessage('⚠️ Oops! Received an empty response from the server. Try again!', 'ai');
+                }
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                appendMessage('🔌 Connection Error: Please make sure your Flask backend server is running smoothly!', 'ai');
+                console.error('API Error:', error);
+            }
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+
+        function appendMessage(text, sender) {
+            const isAi = sender === 'ai';
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `flex items-start space-x-3 fade-in ${isAi ? '' : 'flex-row-reverse space-x-reverse'}`;
+
+            const avatar = document.createElement('div');
+            if (isAi) {
+                avatar.className = `ai-avatar-name px-2 py-1 rounded-md bg-blue-600 flex items-center justify-center font-bold text-white text-xs shrink-0`;
+                avatar.textContent = customAIName;
+            } else {
+                avatar.className = `w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-white shrink-0`;
+                avatar.textContent = 'U';
+            }
+
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = `max-w-2xl flex flex-col space-y-2`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `rounded-2xl p-4 text-slate-200 shadow-sm leading-relaxed whitespace-pre-wrap ${isAi ? 'bg-zinc-950 border border-zinc-900' : 'bg-blue-600 text-white'}`;
+            bubble.textContent = text;
+
+            bubbleContainer.appendChild(bubble);
+
+            if (isAi) {
+                const actionsBar = document.createElement('div');
+                actionsBar.className = 'flex items-center space-x-4 text-xs text-zinc-500 px-1 mt-1';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'hover:text-blue-400 flex items-center space-x-1 transition';
+                copyBtn.innerHTML = '<span>📋</span><span>Copy</span>';
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(text);
+                    copyBtn.innerHTML = '<span>✓</span><span>Copied!</span>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<span>📋</span><span>Copy</span>';
+                    }, 2000);
+                };
+
+                const speakBtn = document.createElement('button');
+                speakBtn.className = 'hover:text-blue-400 flex items-center space-x-1 transition';
+                speakBtn.innerHTML = '<span>🔊</span><span>Listen</span>';
+                
+                const stopBtn = document.createElement('button');
+                stopBtn.className = 'hover:text-rose-400 flex items-center space-x-1 transition';
+                stopBtn.innerHTML = '<span>⏸️</span><span>Pause</span>';
+
+                const waveformContainer = document.createElement('div');
+                waveformContainer.className = 'hidden items-center space-x-1 ml-2';
+                waveformContainer.innerHTML = '<div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>';
+
+                speakBtn.onclick = () => {
+                    if (!('speechSynthesis' in window)) {
+                        alert('Text-to-speech is not supported in this browser.');
+                        return;
+                    }
+
+                    if (window.speechSynthesis.paused) {
+                        window.speechSynthesis.resume();
+                        waveformContainer.classList.remove('hidden');
+                        waveformContainer.classList.add('flex');
+                        return;
+                    }
+
+                    if (window.speechSynthesis.speaking) {
+                        window.speechSynthesis.cancel();
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    
+                    utterance.onend = () => {
+                        waveformContainer.classList.remove('flex');
+                        waveformContainer.classList.add('hidden');
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                    waveformContainer.classList.remove('hidden');
+                    waveformContainer.classList.add('flex');
+                };
+
+                stopBtn.onclick = () => {
+                    if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+                        window.speechSynthesis.pause();
+                        waveformContainer.classList.remove('flex');
+                        waveformContainer.classList.add('hidden');
+                    }
+                };
+
+                actionsBar.appendChild(copyBtn);
+                actionsBar.appendChild(speakBtn);
+                actionsBar.appendChild(stopBtn);
+                actionsBar.appendChild(waveformContainer);
+                bubbleContainer.appendChild(actionsBar);
+            }
+
+            messageWrapper.appendChild(avatar);
+            messageWrapper.appendChild(bubbleContainer);
+            chatContainer.appendChild(messageWrapper);
+        }
+
+        function appendLoadingMessage() {
+            const id = 'loading-' + Date.now();
+            const messageWrapper = document.createElement('div');
+            messageWrapper.id = id;
+            messageWrapper.className = `flex items-start space-x-3 fade-in`;
+
+            const avatar = document.createElement('div');
+            avatar.className = `ai-avatar-name px-2 py-1 rounded-md bg-blue-600 flex items-center justify-center font-bold text-white text-xs shrink-0`;
+            avatar.textContent = customAIName;
+
+            const bubble = document.createElement('div');
+            bubble.className = `bg-zinc-950 border border-zinc-900 rounded-2xl p-4 text-zinc-400 shadow-sm animate-pulse`;
+            bubble.textContent = '🧠 Thinking through your code and concepts... ⏳';
+
+            messageWrapper.appendChild(avatar);
+            messageWrapper.appendChild(bubble);
+            chatContainer.appendChild(messageWrapper);
+            return id;
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function saveSession(userMsg, aiReply) {
+            sessions.push({ userMsg, aiReply, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            localStorage.setItem('brainbyte_sessions', JSON.stringify(sessions));
+            renderSidebarHistory();
+        }
+
+        function renderSidebarHistory() {
+            chatHistoryContainer.innerHTML = '';
+            sessions.forEach((s) => {
+                const item = document.createElement('div');
+                item.className = 'p-2 rounded-lg hover:bg-zinc-900 truncate cursor-pointer transition text-zinc-300';
+                item.textContent = s.userMsg;
+                item.onclick = () => {
+                    switchView('chat');
+                    startNewChat();
+                    appendMessage(s.userMsg, 'user');
+                    appendMessage(s.aiReply, 'ai');
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                };
+                chatHistoryContainer.appendChild(item);
+            });
+        }
+
+        function renderFullHistoryView() {
+            fullHistoryContainer.innerHTML = '';
+            if (sessions.length === 0) {
+                fullHistoryContainer.innerHTML = '<p class="text-zinc-500 text-sm">No chat history recorded yet. Start a conversation in the chatbox!</p>';
+                return;
+            }
+            sessions.forEach((s) => {
+                const card = document.createElement('div');
+                card.className = 'bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-2 hover:border-zinc-700 transition cursor-pointer hover-lift';
+                card.innerHTML = `
+                    <h3 class="font-semibold text-slate-100 text-base">Discussion: ${s.userMsg}</h3>
+                    <p class="text-xs text-zinc-500">Topic: SPPU CS & IT • ${s.time || 'Today'}</p>
+                `;
+                card.onclick = () => {
+                    switchView('chat');
+                    startNewChat();
+                    appendMessage(s.userMsg, 'user');
+                    appendMessage(s.aiReply, 'ai');
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                };
+                fullHistoryContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
