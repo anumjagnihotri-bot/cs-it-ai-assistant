@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-# Enable CORS so your Vercel frontend can call this Render backend without errors
 CORS(app)
 
-client = genai.Client()
+# Explicitly pass the API key to prevent initialization crashes if env var naming differs
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key)
 
 @app.route("/api/chat", methods=["POST"])
 def chat_with_ai():
@@ -39,6 +40,7 @@ def chat_with_ai():
         return jsonify({"reply": response.text})
 
     except Exception as e:
+        print(f"Server Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
