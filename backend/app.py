@@ -64,7 +64,7 @@ def chat_with_ai():
         )
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-3.6-flash",
             contents=user_message,
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
