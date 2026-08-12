@@ -10,7 +10,6 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Explicitly pass the API key to prevent initialization crashes if env var naming differs
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
@@ -33,9 +32,25 @@ def chat_with_ai():
             model="gemini-2.5-flash",
             contents=user_message,
             config=types.GenerateContentConfig(
-                system_instruction=system_prompt
+                system_instruction=system_prompt,
+                # Adjust safety settings to prevent empty blocks on academic queries
+                safety_settings=[
+                    types.SafetySetting(
+                        category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                        threshold="BLOCK_ONLY_HIGH"
+                    ),
+                    types.SafetySetting(
+                        category="HARM_CATEGORY_HARASSMENT",
+                        threshold="BLOCK_ONLY_HIGH"
+                    ),
+                ]
             )
         )
+
+        # Check if response text is empty or blocked
+        if not response.text:
+            print("Warning: Model returned an empty response text.")
+            return jsonify({"reply": "I'm sorry, I couldn't generate a response for that. Please try rephrasing your question."})
 
         return jsonify({"reply": response.text})
 
