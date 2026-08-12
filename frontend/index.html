@@ -435,9 +435,11 @@
                 const data = await response.json();
                 document.getElementById(loadingId).remove();
 
-                if (data.reply) {
+                if (data.reply && data.reply.trim()) {
                     appendMessage(data.reply, 'ai');
                     saveSession(displayMessage, data.reply);
+                } else if (data.error) {
+                    appendMessage(`⚠️ ${data.error}`, 'ai');
                 } else {
                     appendMessage('⚠️ Oops! Received an empty response from the server. Try again!', 'ai');
                 }
