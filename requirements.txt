@@ -3,5 +3,5 @@
  requests
  python-dotenv
  deep-translator
- google-generativeai 
+ google-genai
  gunicorn
