@@ -2,11 +2,13 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
+# Enable CORS so your Vercel frontend can call this Render backend without errors
 CORS(app)
 
 client = genai.Client()
@@ -25,11 +27,13 @@ def chat_with_ai():
             "Provide clear, accurate, structured, and easy-to-understand explanations "
             "for any computer science or IT related questions."
         )
-        full_prompt = f"{system_prompt}\n\nUser Question: {user_message}"
 
         response = client.models.generate_content(
-         model="gemini-3.6-flash",
-            contents=full_prompt,
+            model="gemini-2.5-flash",
+            contents=user_message,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt
+            )
         )
 
         return jsonify({"reply": response.text})
